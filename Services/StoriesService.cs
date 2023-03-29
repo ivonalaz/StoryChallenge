@@ -38,20 +38,8 @@ namespace Stories.Service
                     storyIds = await JsonSerializer.DeserializeAsync<List<int>>(contentStream);
                 }
 
-                await Parallel.ForEachAsync(storyIds, async (id, _) =>
-                {
-                    var story = await GetStoryById(id);
-
-                    if (stories == null)
-                    {
-                        stories = new List<Story>();
-                    }
-
-                    if (story != null)
-                    {
-                        stories.Add(story);
-                    }
-                });
+                var tasks = storyIds.Select(id => GetStoryById(id));
+                stories = (await Task.WhenAll(tasks)).Where(s => s != null).ToList();
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                         .SetSlidingExpiration(TimeSpan.FromSeconds(300))
