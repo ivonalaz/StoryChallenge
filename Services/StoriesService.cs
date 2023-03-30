@@ -8,13 +8,13 @@ namespace Stories.Service
     public class StoriesService : IStoriesService
     {
         private const string storiesCacheKey = "storiesList";
-        private readonly IHttpClientFactory _httpClientFactory;
         private IMemoryCache _memoryCache;
+        private HttpClient httpClient;
 
         public StoriesService(IHttpClientFactory httpClientFactory, IMemoryCache memoryCache)
         {
-            _httpClientFactory = httpClientFactory;
             _memoryCache = memoryCache;
+            httpClient = httpClientFactory.CreateClient("hackerNews");
         }
 
         public async Task<IEnumerable<Story>> GetStories()
@@ -25,8 +25,6 @@ namespace Stories.Service
             {
 
                 var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "https://hacker-news.firebaseio.com/v0/newstories.json");
-
-                var httpClient = _httpClientFactory.CreateClient();
 
                 var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
 
@@ -53,13 +51,11 @@ namespace Stories.Service
             return stories;
         }
 
-        public async Task<Story> GetStoryById(int id)
+        public virtual async Task<Story> GetStoryById(int id)
         {
             var story = new Story();
 
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty");
-
-            var httpClient = _httpClientFactory.CreateClient();
 
             var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
 
